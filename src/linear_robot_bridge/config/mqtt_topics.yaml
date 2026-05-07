@@ -1,0 +1,14 @@
+mqtt_bridge:
+  ros__parameters:
+    mqtt_broker: "localhost"
+    mqtt_port: 1883
+    mqtt_topic: "LinearRobotTask/event"
+    mqtt_response_topic: "LinearRobot/response"
+    controller_topic: "/gantry_controller/joint_trajectory"
+    gripper_controller_topic: "/gripper_controller/joint_trajectory"
+    default_feedrate: 6000.0
+    joint_names:
+      - y_joint
+      - x_joint
+      - z_joint
+      - wrist_joint

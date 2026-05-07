@@ -1,0 +1,67 @@
+# Gantry simulation command list
+# Package: gantry_description
+
+############################
+# 1) Build + source (run once per new terminal)
+############################
+cd ~/ros2_ws
+colcon build --packages-select gantry_description
+source /opt/ros/$ROS_DISTRO/setup.bash
+source ~/ros2_ws/install/setup.bash
+
+############################
+# 2) RViz2 visualization flow (no Gazebo)
+############################
+# Terminal 1: publish robot_description
+source /opt/ros/$ROS_DISTRO/setup.bash
+source ~/ros2_ws/install/setup.bash
+ros2 run robot_state_publisher robot_state_publisher \
+  --ros-args -p robot_description:="$(cat ~/ros2_ws/src/gantry_description/urdf/gantry_1.urdf)"
+
+# Terminal 2: optional movable joints in RViz2
+source /opt/ros/$ROS_DISTRO/setup.bash
+source ~/ros2_ws/install/setup.bash
+ros2 run joint_state_publisher_gui joint_state_publisher_gui
+
+# Terminal 3: open RViz2
+source /opt/ros/$ROS_DISTRO/setup.bash
+source ~/ros2_ws/install/setup.bash
+rviz2
+
+############################
+# 3) Gazebo (ros_gz_sim) flow
+############################
+# Terminal 1: launch Gazebo + spawn robot + load controllers
+source /opt/ros/$ROS_DISTRO/setup.bash
+source ~/ros2_ws/install/setup.bash
+ros2 launch gantry_description gazebo.launch.py
+
+# (Alternative launch file in your package)
+# ros2 launch gantry_description controllers.launch.py
+
+# Terminal 2: check controllers
+source /opt/ros/$ROS_DISTRO/setup.bash
+source ~/ros2_ws/install/setup.bash
+ros2 control list_controllers
+
+# Terminal 3: send a sample trajectory command
+source /opt/ros/$ROS_DISTRO/setup.bash
+source ~/ros2_ws/install/setup.bash
+ros2 action send_goal /joint_trajectory_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
+  trajectory: {
+    joint_names: ['x_joint', 'y_joint', 'z_joint'],
+    points: [
+      {positions: [0.0, 0.0, 0.0], time_from_start: {sec: 2}},
+      {positions: [0.3, 0.4, -0.2], time_from_start: {sec: 5}},
+      {positions: [0.8, -0.2, 0.3], time_from_start: {sec: 8}},
+      {positions: [0.1, 0.1, 0.0], time_from_start: {sec: 11}}
+    ]
+  }
+}"
+
+############################
+# 4) Helpful debug commands
+############################
+ros2 topic list
+ros2 node list
+ros2 param list /robot_state_publisher
